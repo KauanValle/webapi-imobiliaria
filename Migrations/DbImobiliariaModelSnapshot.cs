@@ -25,6 +25,9 @@ namespace Imobiliaria.Migrations
                     b.Property<bool>("cobranca_paga")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("id_condominio")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("id_morador")
                         .HasColumnType("INTEGER");
 

@@ -191,38 +191,47 @@ namespace Imobiliaria
 
         static void cobrancaRoutes(WebApplication app)
         {
-             /*
-              * - Adicionar cobrança ao morador
-              */
+            var prefix = "/cobranca";
 
-             var prefix = "/cobranca";
-
-             app.MapPost(prefix + "/adicionar/{id}", (DbImobiliaria baseDadosCobranca, int id, Cobranca cobranca) =>
+             app.MapPost(prefix + "/adicionar", (DbImobiliaria baseDadosCobranca, Cobranca cobranca) =>
              {
-                 if (baseDadosCobranca.Moradores.Find(id) == null)
+                 if (baseDadosCobranca.Moradores.Find(cobranca.id_morador) == null)
                  {
                      return "Morador não existe para cadastrar cobrança!";
                  }
-
-                 cobranca.id_morador = id;
+                 
+                 if (baseDadosCobranca.Condominios.Find(cobranca.id_condominio) == null)
+                 {
+                     return "Condominio não existe para cadastrar cobrança!";
+                 }
+                 
+                 Random random = new Random();
+                 cobranca.valor_pagamento = random.NextInt64(0, 1500);
                  cobranca.cobranca_paga = false;
                  baseDadosCobranca.Cobranca.Add(cobranca);
                  baseDadosCobranca.SaveChanges();
 
                  return "Cobrança salva com sucesso!";
              });
+             
+             app.MapGet(prefix + "/getAll", (DbImobiliaria baseDadosCobranca) =>
+             {
+                 return baseDadosCobranca.Cobranca.ToList();
+             });
 
              app.MapGet(prefix + "/get/{id}", (DbImobiliaria baseDadosCobranca, int id) =>
              {
-                 return baseDadosCobranca.Cobranca.Find(id);
+                 var cobranca = baseDadosCobranca.Cobranca.Find(id);
+                 
+                 return cobranca;
              });
              
-             app.MapGet(prefix + "/gerar-cobranca/{idUsuario}", (DbImobiliaria baseDadosCobranca, int idUsuario) =>
+             app.MapGet(prefix + "/gerar-cobranca/{id}", (DbImobiliaria baseDadosCobranca, int id) =>
              {
-                 var cobrancaMorador = baseDadosCobranca.Cobranca.Find(idUsuario);
-                 if (cobrancaMorador == null)
+                 var cobranca = baseDadosCobranca.Cobranca.Find(id);
+                 if (cobranca == null)
                  {
-                     return "Morador não existe!";
+                     return "Cobranca não existe!";
                  }
 
                  return "https://actana.com.br/img/editor/gerar-boleto-com-codigo-de-barras.png";

@@ -1,27 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "K:\\Projetos\\Faculdade\\Imobiliaria\\Imobiliaria.csproj": {}
+    "/Users/kauanvallesantos/Documents/Projetos Pessoais/Faculdade/C#/webapi-imobiliaria/Imobiliaria.csproj": {}
   },
   "projects": {
-    "K:\\Projetos\\Faculdade\\Imobiliaria\\Imobiliaria.csproj": {
+    "/Users/kauanvallesantos/Documents/Projetos Pessoais/Faculdade/C#/webapi-imobiliaria/Imobiliaria.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "K:\\Projetos\\Faculdade\\Imobiliaria\\Imobiliaria.csproj",
+        "projectUniqueName": "/Users/kauanvallesantos/Documents/Projetos Pessoais/Faculdade/C#/webapi-imobiliaria/Imobiliaria.csproj",
         "projectName": "Imobiliaria",
-        "projectPath": "K:\\Projetos\\Faculdade\\Imobiliaria\\Imobiliaria.csproj",
-        "packagesPath": "C:\\Users\\Kauan\\.nuget\\packages\\",
-        "outputPath": "K:\\Projetos\\Faculdade\\Imobiliaria\\obj\\",
+        "projectPath": "/Users/kauanvallesantos/Documents/Projetos Pessoais/Faculdade/C#/webapi-imobiliaria/Imobiliaria.csproj",
+        "packagesPath": "/Users/kauanvallesantos/.nuget/packages/",
+        "outputPath": "/Users/kauanvallesantos/Documents/Projetos Pessoais/Faculdade/C#/webapi-imobiliaria/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Kauan\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/kauanvallesantos/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -86,7 +84,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.401\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.401/RuntimeIdentifierGraph.json"
         }
       }
     }
