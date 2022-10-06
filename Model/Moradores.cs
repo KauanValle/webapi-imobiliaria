@@ -7,7 +7,7 @@ public class Moradores
     public string? nome { get; set; }
     public string? email { get; set; }
     public string? cep { get; set; }
-    
+
     /*
      *  EXEMPLO DE JSON
      *
