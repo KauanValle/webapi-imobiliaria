@@ -152,6 +152,13 @@ namespace Imobiliaria
             app.MapPost(prefix + "/cadastrar", (DbImobiliaria baseDadosCondominio, Condominio condominio) =>
             {
                 var dadosValidados = CondominioValidator.validator(condominio);
+                var condominioExist = verifyId(baseDadosCondominio, condominio.id);
+
+                if (condominioExist != "")
+                {
+                    return condominioExist;
+                }
+                
                 if (dadosValidados == CondominioResponse.CondominioSalvoSucesso)
                 {
                     baseDadosCondominio.Condominios.Add(condominio);
@@ -203,6 +210,13 @@ namespace Imobiliaria
 
             app.MapPost(prefix + "/adicionar", (DbImobiliaria baseDadosCobranca, Cobranca cobranca) =>
             {
+                var cobrancaExist = verifyId(baseDadosCobranca, cobranca.id);
+
+                if (cobrancaExist != "")
+                {
+                    return cobrancaExist;
+                }
+                
                 if (baseDadosCobranca.Moradores.Find(cobranca.id_morador) == null)
                 {
                     return "Morador não existe para cadastrar cobrança!";
@@ -344,6 +358,7 @@ namespace Imobiliaria
         {
             if (id != null)
             {
+                
                 if (baseDadosMoradores.Moradores.Find(id) != null)
                 {
                     return "Morador com ID informado já existe!";
