@@ -21,6 +21,7 @@ namespace Imobiliaria
 {
     class Program
     {
+        public static HttpContext query;
         static void Main(string[] args)
         {
             var app = loadDataBase(args);
@@ -64,7 +65,13 @@ namespace Imobiliaria
             {
                 var dadosValidados = MoradorValidator.validator(morador);
                 var getCondominioId = baseDadosMoradores.Condominios.Find(morador.id_condominio);
-                
+                var moradorExistente = verifyId(baseDadosMoradores, morador.id);
+
+                if (moradorExistente != "")
+                {
+                    return moradorExistente;
+                }
+
                 if (getCondominioId == null)
                 {
                     return "Condominio do morador não existe!";
@@ -191,63 +198,159 @@ namespace Imobiliaria
 
         static void cobrancaRoutes(WebApplication app)
         {
+
             var prefix = "/cobranca";
 
-             app.MapPost(prefix + "/adicionar", (DbImobiliaria baseDadosCobranca, Cobranca cobranca) =>
-             {
-                 if (baseDadosCobranca.Moradores.Find(cobranca.id_morador) == null)
-                 {
-                     return "Morador não existe para cadastrar cobrança!";
-                 }
-                 
-                 if (baseDadosCobranca.Condominios.Find(cobranca.id_condominio) == null)
-                 {
-                     return "Condominio não existe para cadastrar cobrança!";
-                 }
-                 
-                 Random random = new Random();
-                 cobranca.valor_pagamento = random.NextInt64(0, 1500);
-                 cobranca.cobranca_paga = false;
-                 baseDadosCobranca.Cobranca.Add(cobranca);
-                 baseDadosCobranca.SaveChanges();
+            app.MapPost(prefix + "/adicionar", (DbImobiliaria baseDadosCobranca, Cobranca cobranca) =>
+            {
+                if (baseDadosCobranca.Moradores.Find(cobranca.id_morador) == null)
+                {
+                    return "Morador não existe para cadastrar cobrança!";
+                }
 
-                 return "Cobrança salva com sucesso!";
-             });
-             
-             app.MapGet(prefix + "/getAll", (DbImobiliaria baseDadosCobranca) =>
-             {
-                 return baseDadosCobranca.Cobranca.ToList();
-             });
+                if (baseDadosCobranca.Condominios.Find(cobranca.id_condominio) == null)
+                {
+                    return "Condominio não existe para cadastrar cobrança!";
+                }
 
-             app.MapGet(prefix + "/get/{id}", (DbImobiliaria baseDadosCobranca, int id) =>
-             {
-                 var cobranca = baseDadosCobranca.Cobranca.Find(id);
-                 
-                 return cobranca;
-             });
-             
-             app.MapGet(prefix + "/gerar-cobranca/{id}", (DbImobiliaria baseDadosCobranca, int id) =>
-             {
-                 var cobranca = baseDadosCobranca.Cobranca.Find(id);
-                 if (cobranca == null)
-                 {
-                     return "Cobranca não existe!";
-                 }
+                Random random = new Random();
+                cobranca.valor_pagamento = random.NextInt64(0, 1500);
+                cobranca.cobranca_paga = false;
+                baseDadosCobranca.Cobranca.Add(cobranca);
+                baseDadosCobranca.SaveChanges();
 
-                 return "https://actana.com.br/img/editor/gerar-boleto-com-codigo-de-barras.png";
-             });
+                return "Cobrança salva com sucesso!";
+            });
 
-             app.MapGet(prefix + "/pagar-cobranca/{idCobranca}", (DbImobiliaria baseDadosCobranca, int idCobranca) =>
-             {
-                 var cobranca = baseDadosCobranca.Cobranca.Find(idCobranca);
-                 if (cobranca == null)
-                 {
-                     return "Cobrança não existe!";
-                 }
-                 cobranca.cobranca_paga = true;
-                 baseDadosCobranca.SaveChanges();
-                 return "Cobraça paga!";
-             });
+            app.MapGet(prefix + "/getAll",
+                (DbImobiliaria baseDadosCobranca) => { return baseDadosCobranca.Cobranca.ToList(); });
+
+            app.MapGet(prefix + "/get/{id}", (DbImobiliaria baseDadosCobranca, int id) =>
+            {
+                var cobranca = baseDadosCobranca.Cobranca.Find(id);
+
+                return cobranca;
+            });
+
+            app.MapGet(prefix + "/gerar-cobranca/{id}", (DbImobiliaria baseDadosCobranca, int id) =>
+            {
+                var cobranca = baseDadosCobranca.Cobranca.Find(id);
+                if (cobranca == null)
+                {
+                    return "Cobranca não existe!";
+                }
+
+                return "https://actana.com.br/img/editor/gerar-boleto-com-codigo-de-barras.png";
+            });
+
+            app.MapGet(prefix + "/pagar-cobranca/{idCobranca}", (DbImobiliaria baseDadosCobranca, int idCobranca) =>
+            {
+                var cobranca = baseDadosCobranca.Cobranca.Find(idCobranca);
+                if (cobranca == null)
+                {
+                    return "Cobrança não existe!";
+                }
+
+                cobranca.cobranca_paga = true;
+                baseDadosCobranca.SaveChanges();
+                return "Cobraça paga!";
+            });
+
+            app.MapGet(prefix + "/get/params", (DbImobiliaria baseDadosCobranca, string column, string value) =>
+            {
+                var colunas = column.Split(",");
+                var valores = value.Split(",");
+                List<Cobranca> listaCobrancaRetorno = new List<Cobranca>();
+                if (colunas.Length > 1)
+                {
+                    try
+                    {
+                        if (colunas[0] == "id_morador")
+                        {
+                            listaCobrancaRetorno = findMoradorCobranca(baseDadosCobranca, valores, true);
+                        }
+                        else
+                        {
+                            listaCobrancaRetorno = findCondominioCobranca(baseDadosCobranca, valores, true);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        throw new Exception("Informe 2 valores!");
+                    }
+                }
+                else
+                {
+                    if (colunas[0] == "id_morador")
+                    {
+                        listaCobrancaRetorno = findMoradorCobranca(baseDadosCobranca, valores, false);
+                    }
+                    else
+                    {
+                        listaCobrancaRetorno = findCondominioCobranca(baseDadosCobranca, valores, false);
+                    }
+                }
+                
+                return listaCobrancaRetorno;
+            });
+        }
+
+        static List<Cobranca> findMoradorCobranca(DbImobiliaria baseDados, string[] valores, bool isMultipleColumn)
+        {
+            List<Cobranca> listaCobrancaRetorno = new List<Cobranca>();
+            var listaCobranca = baseDados.Cobranca.Where(cobranca => cobranca.id_morador == Convert.ToInt32(valores[0])).ToList();
+            if (isMultipleColumn)
+            {
+                foreach (var cob in listaCobranca)
+                {
+                    if (cob.id_condominio == Convert.ToInt32(valores[1]))
+                    {
+                        listaCobrancaRetorno.Add(cob);
+                    }
+                }
+            }
+            else
+            {
+                listaCobrancaRetorno = listaCobranca;
+            }
+            return listaCobrancaRetorno;
+        }
+
+        static List<Cobranca> findCondominioCobranca(DbImobiliaria baseDados, string[] valores, bool isMultipleColumn)
+        {
+            List<Cobranca> listaCobrancaRetorno = new List<Cobranca>();
+            
+            var listaCobranca = baseDados.Cobranca.Where(cobranca => cobranca.id_condominio == Convert.ToInt32(valores[0])).ToList();
+            if (isMultipleColumn)
+            {
+                foreach (var cob in listaCobranca)
+                {
+                    if (cob.id_morador == Convert.ToInt32(valores[1]))
+                    {
+                        listaCobrancaRetorno.Add(cob);
+                    }
+                }
+            }
+            else
+            {
+                listaCobrancaRetorno = listaCobranca;
+            }
+
+            return listaCobrancaRetorno;
+
+        }
+
+        static string verifyId(DbImobiliaria baseDadosMoradores, int id)
+        {
+            if (id != null)
+            {
+                if (baseDadosMoradores.Moradores.Find(id) != null)
+                {
+                    return "Morador com ID informado já existe!";
+                }
+            }
+
+            return "";
         }
     }
 }
