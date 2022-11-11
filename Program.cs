@@ -37,6 +37,7 @@ namespace Imobiliaria
 
         static WebApplication loadDataBase(string[] args)
         {
+            
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddCors(options => options.AddPolicy(name: "MyPolicy",
