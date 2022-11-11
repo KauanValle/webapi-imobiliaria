@@ -12,6 +12,7 @@
 //	dotnet ef migrations add InitialCreate
 //	dotnet ef database update
 
+using DocumentFormat.OpenXml.Drawing.Charts;
 using Imobiliaria.Model;
 using Imobiliaria.Model.DB;
 using Imobiliaria.Responses;
@@ -25,11 +26,12 @@ namespace Imobiliaria
         static void Main(string[] args)
         {
             var app = loadDataBase(args);
+            app.UseCors("MyPolicy");
             
             moradoresRoutes(app);
             condominioRoutes(app);
             cobrancaRoutes(app);
-
+            
             app.Run();
         }
 
@@ -37,6 +39,13 @@ namespace Imobiliaria
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(options => options.AddPolicy(name: "MyPolicy",
+            
+                policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                }));
+            
             var connectionString =
                 builder.Configuration.GetConnectionString("Imobiliaria") ?? "Data Source=Imobiliaria.db";
             builder.Services.AddSqlite<DbImobiliaria>(connectionString);
@@ -65,7 +74,7 @@ namespace Imobiliaria
             {
                 var dadosValidados = MoradorValidator.validator(morador);
                 var getCondominioId = baseDadosMoradores.Condominios.Find(morador.id_condominio);
-                var moradorExistente = verifyId(baseDadosMoradores, morador.id);
+                var moradorExistente = verifyMoradorId(baseDadosMoradores, morador.id);
 
                 if (moradorExistente != "")
                 {
@@ -146,13 +155,24 @@ namespace Imobiliaria
 
             app.MapGet(prefix + "/get/{id}", (DbImobiliaria baseDadosCondominio, int id) =>
             {
-                return baseDadosCondominio.Condominios.Find(id);
+                var condominio = baseDadosCondominio.Condominios.Find(id);
+                var sucesso = new success();
+                sucesso.data = condominio;
+                var error = new Response();
+                error.error = "Condominio nao foi encontrado!";
+
+                if (condominio != null)
+                {
+                    return Results.Ok(sucesso);
+                }
+
+                return Results.NotFound(error);
             });
 
             app.MapPost(prefix + "/cadastrar", (DbImobiliaria baseDadosCondominio, Condominio condominio) =>
             {
                 var dadosValidados = CondominioValidator.validator(condominio);
-                var condominioExist = verifyId(baseDadosCondominio, condominio.id);
+                var condominioExist = verifyCondomonioId(baseDadosCondominio, condominio.id);
 
                 if (condominioExist != "")
                 {
@@ -210,7 +230,7 @@ namespace Imobiliaria
 
             app.MapPost(prefix + "/adicionar", (DbImobiliaria baseDadosCobranca, Cobranca cobranca) =>
             {
-                var cobrancaExist = verifyId(baseDadosCobranca, cobranca.id);
+                var cobrancaExist = verifyCobrancaId(baseDadosCobranca, cobranca.id);
 
                 if (cobrancaExist != "")
                 {
@@ -354,16 +374,23 @@ namespace Imobiliaria
 
         }
 
-        static string verifyId(DbImobiliaria baseDadosMoradores, int id)
+        static string verifyMoradorId(DbImobiliaria baseDadosMoradores, int id)
         {
-            if (id != null)
-            {
-                
-                if (baseDadosMoradores.Moradores.Find(id) != null)
-                {
-                    return "Morador com ID informado já existe!";
-                }
-            }
+            if (baseDadosMoradores.Moradores.Find(id) != null) { return "Morador com ID informado já existe!"; }
+
+            return "";
+        }
+        
+        static string verifyCondomonioId(DbImobiliaria baseDadosMoradores, int id)
+        {
+            if (baseDadosMoradores.Condominios.Find(id) != null) { return "Condominio com ID informado já existe!"; }
+
+            return "";
+        }
+        
+        static string verifyCobrancaId(DbImobiliaria baseDadosMoradores, int id)
+        {
+            if (baseDadosMoradores.Moradores.Find(id) != null) { return "Cobranca com ID informado já existe!"; }
 
             return "";
         }
